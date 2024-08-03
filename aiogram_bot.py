@@ -5,7 +5,10 @@ import configparser
 import os
 import boto3
 import re
+import json
+import requests
 from boto3.dynamodb.conditions import Attr
+from bs4 import BeautifulSoup
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import CommandStart, CommandObject
@@ -32,23 +35,69 @@ ids = cfg['EDITORS']['id']
 editors = [int(num.strip()) for num in ids.split(',')]
 
 
-def user_request_cleaner(text):
-    _ = text.replace("__", "")
-    _ = "".join(char for char in _ if not char.isdigit())
+class PixivDataForParsing:
+    url = ''
+    meta_count = 0
+    link_type = ''
+    job_id = ''
+    target = ''
 
+    def __init__(self, url, meta_count, link_type, job_id, target):
+        self.url = url
+        self.meta_count = meta_count
+        self.link_type = link_type
+        self.job_id = job_id
+        self.target = target
+
+
+async def process_pixiv(user_request):
+    id_from_link = (re.search(r'\d+', user_request)).group()
+    if 'bookmarks' in user_request:
+        pixiv_obj = PixivDataForParsing(f'https://www.pixiv.net/en/users/{id_from_link}', 15, 'user', id_from_link,
+                                        'name')
+        _ = await extract_author_from_pixiv_url(pixiv_obj)
+    elif 'artworks' in user_request:
+        pixiv_obj = PixivDataForParsing(user_request, 26, 'illust', id_from_link, 'userAccount')
+        _ = await extract_author_from_pixiv_url(pixiv_obj)
+    elif 'users' in user_request:
+        pixiv_obj = PixivDataForParsing(user_request, 15, 'user', id_from_link, 'name')
+        _ = await extract_author_from_pixiv_url(pixiv_obj)
+    elif 'illustrations':
+        pixiv_obj = PixivDataForParsing(f'https://www.pixiv.net/en/users/{id_from_link}', 15, 'user', id_from_link,
+                                        'name')
+        _ = await extract_author_from_pixiv_url(pixiv_obj)
     return _
 
 
-def detect_link(text):
+async def extract_author_from_pixiv_url(pixiv_obj):
+    response = requests.get(pixiv_obj.url)
+    page = BeautifulSoup(response.text, 'html.parser')
+
+    _ = page.find_all('meta')
+    meta_tag = (_[pixiv_obj.meta_count])['content']
+    data = json.loads(meta_tag)
+    return data[pixiv_obj.link_type][pixiv_obj.job_id][pixiv_obj.target]
+
+
+async def user_request_cleaner(text):
+    _ = text.replace('__', '')
+    _ = ''.join(char for char in _ if not char.isdigit())
+
+    return _.lower()
+
+
+async def detect_link(text):
     _ = text.split()
     for word in _:
         if word.startswith('https://x.com') or word.startswith('https://twitter.com'):
-            return True
-    return False
+            return 1
+        elif word.startswith('https://www.pixiv.net'):
+            return 2
+    return 0
 
 
-def extract_author_from_twitter_url(url):
-    pattern = r"https?://[^/]+/([^/]+)/"
+async def extract_author_from_twitter_url(url):
+    pattern = r'https?://(?:twitter\.com|x\.com)/([^/]+)(?:/status/\d+)?'
     matches = re.findall(pattern, url)
 
     if matches:
@@ -68,7 +117,7 @@ async def author_add(name, info):
 
 async def author_check(search_name):
     filter_expression = None
-    user_request = user_request_cleaner(search_name).lower()
+    user_request = user_request_cleaner(search_name)
     if filter_expression:
         filter_expression |= Attr('author').contains(user_request)
     else:
@@ -87,7 +136,7 @@ async def author_check(search_name):
 async def send_welcome(message: types.Message):
     await message.answer(
         '🔬 Хочеш перевірити, чи автор є пов`язаним з агресором?'
-        '\nПросто введи:\n\n<b><i>!c нікнейм/посилання Twitter</i></b>'
+        '\nПросто введи:\n\n<b><i>!c нікнейм або посилання Twitter/Pixiv</i></b>'
         '\n\n\n❕ <u><i>всі команди мають писатися латинськими літерами</i></u>', reply_markup=kb_start)
 
 
@@ -98,9 +147,11 @@ async def send_check_result(message: types.Message, command: CommandObject):
     if command.args is None:
         await message.reply('❌ Команду введено неправильно. Ось приклад:\n\n<i>!с nickname</i>')
     else:
-        if detect_link(command.args):
-            _ = extract_author_from_twitter_url(command.args)
-        else:
+        if await detect_link(command.args) == 1:
+            _ = await extract_author_from_twitter_url(command.args)
+        elif await detect_link(command.args) == 2:
+            _ = await process_pixiv(command.args)
+        elif await detect_link(command.args) == 0:
             _ = command.args
         search = await author_check(_)
         if search:

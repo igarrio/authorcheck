@@ -1,3 +1,5 @@
 aiogram==3.2.0
 Flask==3.0.3
 boto3==1.34.151
+beautifulsoup4==4.12.2
+requests==2.31.0
