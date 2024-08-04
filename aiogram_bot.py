@@ -3,10 +3,10 @@ import logging
 import sys
 import configparser
 import os
-import boto3
 import re
 import json
 import requests
+import boto3
 from boto3.dynamodb.conditions import Attr
 from bs4 import BeautifulSoup
 
@@ -20,6 +20,7 @@ dynamodb_client = boto3.resource(service_name='dynamodb', region_name='eu-centra
                                  aws_secret_access_key=os.environ.get('aws_secret_access_key'))
 
 db = dynamodb_client.Table(os.environ.get('db_name'))
+print(db.table_status)
 
 add = InlineKeyboardButton(text='Додати автора', callback_data='add')
 link = InlineKeyboardButton(text='Автор бота', url='t.me/kimino_musli')
@@ -55,18 +56,17 @@ async def process_pixiv(user_request):
     if 'bookmarks' in user_request:
         pixiv_obj = PixivDataForParsing(f'https://www.pixiv.net/en/users/{id_from_link}', 15, 'user', id_from_link,
                                         'name')
-        _ = await extract_author_from_pixiv_url(pixiv_obj)
+        return await extract_author_from_pixiv_url(pixiv_obj)
     elif 'artworks' in user_request:
         pixiv_obj = PixivDataForParsing(user_request, 26, 'illust', id_from_link, 'userAccount')
-        _ = await extract_author_from_pixiv_url(pixiv_obj)
+        return await extract_author_from_pixiv_url(pixiv_obj)
     elif 'users' in user_request:
         pixiv_obj = PixivDataForParsing(user_request, 15, 'user', id_from_link, 'name')
-        _ = await extract_author_from_pixiv_url(pixiv_obj)
+        return await extract_author_from_pixiv_url(pixiv_obj)
     elif 'illustrations':
         pixiv_obj = PixivDataForParsing(f'https://www.pixiv.net/en/users/{id_from_link}', 15, 'user', id_from_link,
                                         'name')
-        _ = await extract_author_from_pixiv_url(pixiv_obj)
-    return _
+        return await extract_author_from_pixiv_url(pixiv_obj)
 
 
 async def extract_author_from_pixiv_url(pixiv_obj):
@@ -79,11 +79,11 @@ async def extract_author_from_pixiv_url(pixiv_obj):
     return data[pixiv_obj.link_type][pixiv_obj.job_id][pixiv_obj.target]
 
 
-async def user_request_cleaner(text):
+def user_request_cleaner(text):
     _ = text.replace('__', '')
-    _ = ''.join(char for char in _ if not char.isdigit())
+    _ = (''.join(char for char in _ if not char.isdigit())).lower()
 
-    return _.lower()
+    return _
 
 
 async def detect_link(text):
@@ -122,10 +122,10 @@ async def author_check(search_name):
         filter_expression |= Attr('author').contains(user_request)
     else:
         filter_expression = Attr('author').contains(user_request)
-    response = db.scan(
+    _response = db.scan(
         FilterExpression=filter_expression
     )
-    item = response.get('Items', [])
+    item = _response.get('Items', [])
     if item:
         return item
     else:
@@ -209,6 +209,7 @@ async def add(callback_query: CallbackQuery):
 
 async def main():
     await dp.start_polling(bot)
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
