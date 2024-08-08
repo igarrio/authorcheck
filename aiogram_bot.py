@@ -136,16 +136,16 @@ async def author_check(search_name):
 async def send_welcome(message: types.Message):
     await message.answer(
         '🔬 Хочеш перевірити, чи автор є пов`язаним з агресором?'
-        '\nПросто введи:\n\n<b><i>!c нікнейм або посилання Twitter/Pixiv</i></b>'
-        '\n\n\n❕ <u><i>всі команди мають писатися латинськими літерами</i></u>', reply_markup=kb_start)
+        '\nПросто введи:\n\n<b><i>/check нікнейм або посилання Twitter/Pixiv</i></b>'
+        '\n\n\n❕ <u><i>нікнейм автора пишемо без "@"</i></u>', reply_markup=kb_start)
 
 
-@dp.message(Command('c', prefix='!'))
+@dp.message(Command('check', prefix='/'))
 async def send_check_result(message: types.Message, command: CommandObject):
     print(f'Check request: {command.args}')
 
     if command.args is None:
-        await message.reply('❌ Команду введено неправильно. Ось приклад:\n\n<i>!с nickname</i>')
+        await message.reply('❌ Команду введено неправильно. Ось приклад:\n\n<i>/check нік автора бо посилання</i>')
     else:
         if await detect_link(command.args) == 1:
             _ = await extract_author_from_twitter_url(command.args)
@@ -170,14 +170,14 @@ async def send_check_result(message: types.Message, command: CommandObject):
             await message.reply('😮‍💨 На щастя - нічого не знайдено!\nАле радимо додатково перевіряти авторів')
 
 
-@dp.message(Command('a', prefix='!'))
+@dp.message(Command('add', prefix='/'))
 async def send_add_russian(message: types.Message, command: CommandObject):
     user_id = message.from_user.id
     if user_id in editors:
         print(f'Adding: {command.args} by {user_id}')
         if command.args is None:
             await message.reply('❗ Команда введена некоректно\n\n'
-                                'Будь ласка, введіть команду `!a` та два рядки, розділені '
+                                'Будь ласка, введіть команду `/add` та два рядки, розділені '
                                 'натисканням клавіші Shift+Enter.')
         else:
             lines = command.args.split('\n')
@@ -187,8 +187,8 @@ async def send_add_russian(message: types.Message, command: CommandObject):
                 await message.reply(f'✅ Успішно внесено до бази:\n\nНікнейм: {name}\nПричина: {info}')
             else:
                 await message.reply('❗ Команда введена некоректно\n\n'
-                                    'Будь ласка, введіть команду `!a` та два рядки, розділені '
-                                    'натисканням клавіші Enter.')
+                                    'Будь ласка, введіть команду `/add` та два рядки, розділені '
+                                    'натисканням клавіші Shift+Enter.')
     else:
         await message.reply('⛔️ Нажаль, ви не маєте доступу до виконання даної команди. ⛔️')
 
@@ -199,7 +199,7 @@ async def add(callback_query: CallbackQuery):
     await bot.send_message(
         callback_query.from_user.id,
         'В боті є можливість поповнювати базу небажаних авторів використовуючи команду:\n\n'
-        '<i>!a нікнейм_и\n</i>'
+        '<i>/add нікнейм_и\n</i>'
         '<i>причина</i>\n\n'
         'Дана функція доступна лише деяким довіреним особам з міркувань безпеки. '
         'Тому якщо ви не є у цьому списку, але бажаєте доповнити базу - звертайтесь до мене, '
