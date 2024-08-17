@@ -20,7 +20,13 @@ def set_handlers():
     dp.message.register(ban.handle_ban, Command('ban', prefix='/'))
     dp.message.register(add.handle_send_add_russian, Command('add', prefix='/'))
     dp.callback_query.register(handle_add, F.data == 'add')
-    dp.include_router(sender.router)
+
+    dp.message.register(sender.handle_sender, Command('send', prefix='/'))
+    dp.message.register(sender.handle_set_sender_text, SenderMsg.text, F.text)
+    dp.message.register(sender.handle_set_sender_photo, SenderMsg.photo, F.photo)
+    dp.message.register(sender.handle_set_sender_btn_text, SenderMsg.btn_text, F.text)
+    dp.message.register(sender.handle_set_sender_btn_url, SenderMsg.btn_url, F.text)
+
     dp.callback_query.register(cancel_sender, F.data == 'cancel_sender')
     dp.callback_query.register(start_sender, F.data == 'start_sender', SenderMsg.confirm)
     dp.message.register(handle_invalid_input)
