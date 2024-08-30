@@ -4,6 +4,8 @@ from aiogram.types import CallbackQuery
 import source.database.base
 from source.bot_init import bot
 from source.utils.sender import start_sending
+from source.utils.report import send_report
+import source.handlers.commands.report_author
 
 
 async def cancel_sender(callback: CallbackQuery, state: FSMContext):
@@ -27,14 +29,16 @@ async def start_sender(callback: CallbackQuery, state: FSMContext):
     )
 
 
-async def handle_add(callback_query: CallbackQuery):
-    await bot.answer_callback_query(callback_query.id)
-    await bot.send_message(
-        callback_query.from_user.id,
-        'В боті є можливість поповнювати базу небажаних авторів використовуючи команду:\n\n'
-        '<i>/add нікнейм_и\n</i>'
-        '<i>причина</i>\n\n'
-        'Дана функція доступна лише деяким довіреним особам з міркувань безпеки. '
-        'Тому якщо ви не є у цьому списку, але бажаєте доповнити базу - звертайтесь до мене, '
-        '<a href="t.me/kimino_musli">KimiNo</a>'
-    )
+async def report_author_confirm(callback: CallbackQuery):
+    await bot.answer_callback_query(callback.id)
+    await send_report('Add Author', callback.from_user.id, bot, callback.from_user.first_name, source.handlers.commands.report_author.report_text)
+    await callback.message.edit_text('✅ Повідомлення успішно відправлено адміністратору')
+    await callback.answer()
+
+
+async def report_bug_confirm(callback: CallbackQuery):
+    await bot.answer_callback_query(callback.id)
+    await send_report('Bug Report', callback.from_user.id, bot, callback.from_user.first_name, source.handlers.commands.report_bug.report_text)
+    await callback.message.edit_text('✅ Повідомлення успішно відправлено адміністратору')
+    await callback.answer()
+

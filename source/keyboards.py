@@ -9,14 +9,22 @@ kb_sender = InlineKeyboardMarkup(resize_keyboard=True,
                                  ]
                                  )
 
-add = InlineKeyboardButton(text='Додати автора', callback_data='add')
 link = InlineKeyboardButton(text='Автор бота', url='t.me/kimino_musli')
 kb_start = InlineKeyboardMarkup(resize_keyboard=True,
                                 inline_keyboard=[
-                                    [link], [add]
+                                    [link]
                                 ]
                                 )
 
+btn_a_report = InlineKeyboardButton(text='✅ Підтверджую', callback_data=f'a_report_confirm')
+kb_a_report = InlineKeyboardMarkup(resize_keyboard=True,
+                                 inline_keyboard=[[btn_a_report]]
+                                 )
+
+btn_b_report = InlineKeyboardButton(text='✅ Підтверджую', callback_data=f'b_report_confirm')
+kb_b_report = InlineKeyboardMarkup(resize_keyboard=True,
+                                 inline_keyboard=[[btn_b_report]]
+                                 )
 
 def generate_sender_keyboard(text, url):
     builder = InlineKeyboardBuilder()

@@ -9,7 +9,7 @@ async def handle_send_add_russian(message: types.Message, command: CommandObject
         print(f'Adding: {command.args}: by {message.from_user.id}')
         if command.args is None:
             await message.reply('❗ Команда введена некоректно\n\n'
-                                'Будь ласка, введіть команду `/add` та два рядки, розділені '
+                                'Будь ласка, введіть команду <code>/add</code> та два рядки, розділені '
                                 'натисканням клавіші Shift+Enter.')
         else:
             lines = command.args.split('\n')
@@ -19,7 +19,7 @@ async def handle_send_add_russian(message: types.Message, command: CommandObject
                 await message.reply(f'✅ Успішно внесено до бази:\n\nНікнейм: {name}\nПричина: {info}')
             else:
                 await message.reply('❗ Команда введена некоректно\n\n'
-                                    'Будь ласка, введіть команду `/add` та два рядки, розділені '
+                                    'Будь ласка, введіть команду <code>/add</code> та два рядки, розділені '
                                     'натисканням клавіші Shift+Enter.')
     else:
         await message.reply('⛔️ Нажаль, ви не маєте доступу до виконання даної команди ⛔️')

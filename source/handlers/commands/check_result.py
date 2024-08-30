@@ -13,7 +13,7 @@ async def handle_send_check_result(message: types.Message, command: CommandObjec
     log.info(f'Check request: {command.args}\nBy: {message.from_user.url}')
 
     if command.args is None:
-        await message.reply('❌ Команду введено неправильно. Ось приклад:\n\n/check nickname_or_link')
+        await message.reply('❌ Команду введено неправильно. Ось приклад:\n\n<code>/check nickname_or_link</code>')
     else:
         if await detect_link(command.args) == 1:
             _ = await extract_author_from_twitter_url(command.args)
