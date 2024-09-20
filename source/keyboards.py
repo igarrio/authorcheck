@@ -1,18 +1,19 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-btn_sender_yes = InlineKeyboardButton(text='Tак', callback_data=f'start_sender')
-btn_sender_no = InlineKeyboardButton(text='Ні', callback_data=f'cancel_sender')
+btn_add_cancel = InlineKeyboardButton(text='❌ Відмінити',
+                                      callback_data='cancel_add')
+
 kb_sender = InlineKeyboardMarkup(resize_keyboard=True,
                                  inline_keyboard=[
-                                     [btn_sender_yes], [btn_sender_no]
+                                     [InlineKeyboardButton(text='Tак', callback_data=f'start_sender')],
+                                     [InlineKeyboardButton(text='Ні', callback_data=f'cancel_sender')]
                                  ]
                                  )
 
-link = InlineKeyboardButton(text='Автор бота', url='t.me/kimino_musli')
 kb_start = InlineKeyboardMarkup(resize_keyboard=True,
                                 inline_keyboard=[
-                                    [link]
+                                    [InlineKeyboardButton(text='Автор бота', url='t.me/kimino_musli')]
                                 ]
                                 )
 
@@ -25,6 +26,19 @@ btn_b_report = InlineKeyboardButton(text='✅ Підтверджую', callback_
 kb_b_report = InlineKeyboardMarkup(resize_keyboard=True,
                                  inline_keyboard=[[btn_b_report]]
                                  )
+
+kb_add = InlineKeyboardMarkup(resize_keyboard=True,
+                              inline_keyboard=[
+                                  [InlineKeyboardButton(text='Небажаний автор', callback_data='add_bad')],
+                                  [InlineKeyboardButton(text='Український автор', callback_data='add_good')]
+                              ])
+
+kb_add_confirm = InlineKeyboardMarkup(resize_keyboard=True,
+                                          inline_keyboard=[
+                                              [InlineKeyboardButton(text='✅ Підтверджую', callback_data='confirm_add')],
+                                              [btn_add_cancel]
+                                          ])
+
 
 def generate_sender_keyboard(text, url):
     builder = InlineKeyboardBuilder()

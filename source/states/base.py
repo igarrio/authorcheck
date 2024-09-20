@@ -7,3 +7,8 @@ class SenderMsg(StatesGroup):
     btn_text = State()
     btn_url = State()
     confirm = State()
+
+
+class AddMsg(StatesGroup):
+    type = State()
+    content = State()

@@ -31,6 +31,7 @@ class UsersId(GetId):
 db = None
 ban_db = None
 users_db = None
+good_author_db = None
 obj_blacklist = None
 obj_users = None
 ban_set = None
@@ -41,6 +42,7 @@ def connect_db():
     global db
     global ban_db
     global users_db
+    global good_author_db
     log = logging.getLogger('database')
     db = dynamodb_client.Table(os.environ.get('db_name'))
     log.info(f' MainDB: {db.table_status}')
@@ -48,4 +50,6 @@ def connect_db():
     log.info(f' BlackList: {ban_db.table_status}')
     users_db = dynamodb_client.Table(os.environ.get('db_users'))
     log.info(f' UsersDB: {users_db.table_status}')
+    good_author_db = dynamodb_client.Table(os.environ.get('db_goodauthor'))
+    log.info(f' UaAuthorDB: {good_author_db.table_status}')
 

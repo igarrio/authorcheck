@@ -1,7 +1,12 @@
 import logging
+import random
+
 from boto3.dynamodb.conditions import Attr
 import source.database.base
+from source.utils.links import detect_link
 from source.utils.request_cleaner import user_request_cleaner
+from source.utils.social.pixiv import process_pixiv
+from source.utils.social.twitter import extract_author_from_twitter_url
 
 
 def update_db():
@@ -11,9 +16,15 @@ def update_db():
     obj_users.get_id()
 
 
-async def author_check(search_name):
+async def author_check(arg):
     filter_expression = None
-    user_request = user_request_cleaner(search_name)
+    if await detect_link(arg) == 1:
+        _ = await extract_author_from_twitter_url(arg)
+    elif await detect_link(arg) == 2:
+        _ = await process_pixiv(arg)
+    elif await detect_link(arg) == 0:
+        _ = arg
+    user_request = user_request_cleaner(_)
     if filter_expression:
         filter_expression |= Attr('author').contains(user_request)
     else:
@@ -36,12 +47,24 @@ async def add_user_id(_, _db):
     )
 
 
-async def author_add(name, info):
-    source.database.base.db.put_item(
-        Item={
-            'author': name.lower(),
-            'description': info
-        }
-    )
+async def author_add(data):
+    _ = data['content'].split('\n')
+    if data['type'] == 'add_good':
+        source.database.base.good_author_db.put_item(Item={
+        'author': _[0].lower(),
+        'link': _[1]
+    })
+    elif data['type'] == 'add_bad':
+        source.database.base.db.put_item(Item={
+        'author': _[0].lower(),
+        'description': _[1]
+    })
+
+
+async def get_random_author():
+    response = source.database.base.good_author_db.scan()
+    items = response.get('Items', [])
+    random_item = random.choice(items)
+    return random_item
 
 
