@@ -18,12 +18,18 @@ async def handle_sender(message: types.Message, state: FSMContext):
 
 async def handle_set_sender_text(message: types.Message, state: FSMContext):
     await state.update_data(text=message.text)
-    await state.set_state(SenderMsg.photo)
+    await state.set_state(SenderMsg.media)
     await message.reply(text='Будь ласка, надішліть фото')
 
 
-async def handle_set_sender_photo(message: types.Message, state: FSMContext):
-    await state.update_data(photo=message.photo[-1].file_id)
+async def handle_set_sender_media(message: types.Message, state: FSMContext):
+    _ = f'{message.content_type}'
+    if _ == 'ContentType.PHOTO':
+        content_id = message.photo[-1].file_id
+    elif _ == 'ContentType.VIDEO':
+        content_id = message.video.file_id
+    await state.update_data(media_type=_)
+    await state.update_data(media=content_id)
     await state.set_state(SenderMsg.btn_text)
     await message.reply('Надішлість текст кнопки')
 

@@ -3,7 +3,8 @@ from aiogram.fsm.state import StatesGroup, State
 
 class SenderMsg(StatesGroup):
     text = State()
-    photo = State()
+    media_type = State()
+    media = State()
     btn_text = State()
     btn_url = State()
     confirm = State()

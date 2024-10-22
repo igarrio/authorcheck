@@ -12,11 +12,18 @@ kb = None
 async def sender_preview(message: Message, data):
     global kb
     kb = generate_sender_keyboard(data['btn_text'], data['btn_url'])
-    send_msg = await message.answer_photo(caption=data['text'],
-                                          photo=data['photo'],
-                                          reply_markup=kb,
-                                          parse_mode='HTML'
-                                          )
+    if data['media_type'] == 'ContentType.PHOTO':
+        send_msg = await message.answer_photo(caption=data['text'],
+                                              photo=data['media'],
+                                              reply_markup=kb,
+                                              parse_mode='HTML'
+                                              )
+    elif data['media_type'] == 'ContentType.VIDEO':
+        send_msg = await message.answer_video(caption=data['text'],
+                                              video=data['media'],
+                                              reply_markup=kb,
+                                              parse_mode='HTML'
+                                              )
     return send_msg.message_id
 
 

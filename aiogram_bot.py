@@ -11,7 +11,7 @@ from source.database.requests import update_db
 from source.bot_init import bot, dp
 from source.handlers.commands import ban, sender, start, check_result, add, help, report_author, report_bug, inline
 from source.handlers.spam_detector import handle_invalid_input
-from source.utils.filters import UserInBan, IsPrivate
+from source.utils.filters import UserInBan, IsPrivate, MsgIsMedia
 
 
 def set_handlers():
@@ -23,7 +23,7 @@ def set_handlers():
 
     dp.message.register(sender.handle_sender, Command('send', prefix='/'), IsPrivate())
     dp.message.register(sender.handle_set_sender_text, SenderMsg.text, F.text, IsPrivate())
-    dp.message.register(sender.handle_set_sender_photo, SenderMsg.photo, F.photo, IsPrivate())
+    dp.message.register(sender.handle_set_sender_media, SenderMsg.media, MsgIsMedia, IsPrivate())
     dp.message.register(sender.handle_set_sender_btn_text, SenderMsg.btn_text, F.text, IsPrivate())
     dp.message.register(sender.handle_set_sender_btn_url, SenderMsg.btn_url, F.text, IsPrivate())
 
