@@ -1,3 +1,4 @@
+import asyncio
 import os
 from fastapi import FastAPI, Request, HTTPException, Security, Depends
 from fastapi.responses import JSONResponse
@@ -31,16 +32,17 @@ async def health_check():
     return JSONResponse('ok', 200)
 
 
-@app.post('/webhook/{token}')
+@app.post('/{token}')
 async def telegram_webhook(token: str, request: Request):
     from source.bot_init import BOT_TOKEN
     if token != BOT_TOKEN:
         raise HTTPException(status_code=403, detail='Invalid token')
 
     update = Update.model_validate(await request.json(), context={'bot': bot})
-    await dp.feed_update(bot, update)
+    asyncio.create_task(dp.feed_update(bot, update))
 
-    return JSONResponse('ok', 200)
+    return JSONResponse(status_code=200, content={"ok": True})
+
 
 @app.get('/check', dependencies=[Depends(verify_api_key)])
 async def api_check(author: str):

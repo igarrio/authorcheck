@@ -6,8 +6,7 @@ BOT_TOKEN = os.getenv('bot_api_key')
 bot = Bot(token=BOT_TOKEN, parse_mode='HTML')
 dp = Dispatcher()
 
-WEBHOOK_URL = os.getenv("WEBHOOK_URL")
-WEBHOOK_PATH = f"/webhook/{BOT_TOKEN}"
+WEBHOOK_URL = os.getenv("WEBHOOK_URL") + f'/{BOT_TOKEN}'
 
 async def on_startup():
     from source.database.base import connect_db
@@ -18,7 +17,8 @@ async def on_startup():
     from source.handlers.set import set_handlers
     set_handlers()
 
-    await bot.set_webhook(WEBHOOK_URL + WEBHOOK_PATH)
+    await bot.delete_webhook(drop_pending_updates=True)
+    await bot.set_webhook(WEBHOOK_URL, drop_pending_updates=True)
 
 
 async def on_shutdown():
