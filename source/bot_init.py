@@ -1,6 +1,26 @@
 import os
 
 from aiogram import Bot, Dispatcher
+BOT_TOKEN = os.getenv('bot_api_key')
 
-bot = Bot(token=os.environ.get('bot_api_key'), parse_mode='HTML')
+bot = Bot(token=BOT_TOKEN, parse_mode='HTML')
 dp = Dispatcher()
+
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")
+WEBHOOK_PATH = f"/webhook/{BOT_TOKEN}"
+
+async def on_startup():
+    from source.database.base import connect_db
+    from source.database.requests import update_db
+    connect_db()
+    update_db()
+
+    from source.handlers.set import set_handlers
+    set_handlers()
+
+    await bot.set_webhook(WEBHOOK_URL + WEBHOOK_PATH)
+
+
+async def on_shutdown():
+    await bot.delete_webhook()
+    await bot.session.close()

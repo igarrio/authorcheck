@@ -49,7 +49,7 @@ async def send_mail(bot, to_id, from_id, msg_id):
 
 async def start_sending(bot, to_ids, from_id, msg_id):
     count = 0
-    to_ids.remove(admin_id)
+    # to_ids.remove(admin_id)
     for user_id in to_ids:
         if await send_mail(bot, user_id, from_id, msg_id):
             count += 1

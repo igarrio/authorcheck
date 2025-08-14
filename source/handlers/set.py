@@ -1,18 +1,12 @@
-import asyncio
-import logging
-import sys
 from aiogram import F
 from aiogram.filters.command import Command, CommandStart
 from source.handlers.callbacks import cancel_sender, start_sender, report_author_confirm, report_bug_confirm, \
     choose_author_add, confirm_add, cancel_add
-from source.states.base import SenderMsg, AddMsg
-from source.database.base import connect_db
-from source.database.requests import update_db
-from source.bot_init import bot, dp
+from source.bot_init import dp
 from source.handlers.commands import ban, sender, start, check_result, add, help, report_author, report_bug, inline
 from source.handlers.spam_detector import handle_invalid_input
 from source.utils.filters import UserInBan, IsPrivate, MsgIsMedia
-
+from source.states.base import SenderMsg, AddMsg
 
 def set_handlers():
     dp.message.register(ban.handle_pidval_sbu, UserInBan(), IsPrivate())
@@ -23,7 +17,7 @@ def set_handlers():
 
     dp.message.register(sender.handle_sender, Command('send', prefix='/'), IsPrivate())
     dp.message.register(sender.handle_set_sender_text, SenderMsg.text, F.text, IsPrivate())
-    dp.message.register(sender.handle_set_sender_media, SenderMsg.media, MsgIsMedia, IsPrivate())
+    dp.message.register(sender.handle_set_sender_media, SenderMsg.media, MsgIsMedia(), IsPrivate())
     dp.message.register(sender.handle_set_sender_btn_text, SenderMsg.btn_text, F.text, IsPrivate())
     dp.message.register(sender.handle_set_sender_btn_url, SenderMsg.btn_url, F.text, IsPrivate())
 
@@ -44,15 +38,3 @@ def set_handlers():
     dp.inline_query.register(inline.ihandler_check)
 
     dp.message.register(handle_invalid_input, IsPrivate())
-
-
-async def main():
-    connect_db()
-    update_db()
-    set_handlers()
-    await dp.start_polling(bot)
-
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    asyncio.run(main())

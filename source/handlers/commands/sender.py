@@ -19,7 +19,7 @@ async def handle_sender(message: types.Message, state: FSMContext):
 async def handle_set_sender_text(message: types.Message, state: FSMContext):
     await state.update_data(text=message.text)
     await state.set_state(SenderMsg.media)
-    await message.reply(text='Будь ласка, надішліть фото')
+    await message.reply(text='Будь ласка, надішліть фото або відео')
 
 
 async def handle_set_sender_media(message: types.Message, state: FSMContext):
