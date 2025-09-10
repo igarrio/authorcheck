@@ -1,3 +1,5 @@
+## ver 1.9-2
+- 🥀🥀🥀 handle TelegramNetworkError
 ## ver 1.9-1:
 - fixes
 ## ver 1.9:
