@@ -35,4 +35,5 @@ async def handle_send_check_result(message: types.Message, command: CommandObjec
             else:
                 await message.reply('😮‍💨 На щастя - нічого не знайдено!\nАле радимо додатково перевіряти авторів')
     except TelegramNetworkError:
-        await message.reply('🥀 🥀 🥀 Вибачте, сталась помилка на стороні серверу Telegram:\n\nTelegramNetworkError: HTTP Client says - Request timeout error')
+        await message.reply('🥀 🥀 🥀 Вибачте, сталась помилка на стороні Telegram:\n\nTelegramNetworkError: HTTP Client says - Request timeout error')
+        raise

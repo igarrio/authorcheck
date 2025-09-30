@@ -1,12 +1,13 @@
 import asyncio
-import os
 from fastapi import FastAPI, Request, HTTPException, Security, Depends
 from fastapi.responses import JSONResponse
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from aiogram.types import Update
 from contextlib import asynccontextmanager
-from source.bot_init import dp, on_startup, on_shutdown, bot
-from source.database.requests import author_check
+from secrets import compare_digest
+from source.bot_init import dp, on_startup, on_shutdown, bot, BOT_TOKEN
+from source.database.requests import author_check, author_add
+from source.utils.tokens import user_verify_api_key, admin_verify_api_key, make_wh_token
+from source.states.base import APIAddAuthor
 
 
 @asynccontextmanager
@@ -16,27 +17,18 @@ async def lifespan(app: FastAPI):
     await on_shutdown()
 
 app = FastAPI(lifespan=lifespan)
-bearer_scheme = HTTPBearer()
-API_SECRET_KEYS = os.getenv('API_SECRET_KEYS', '')
-VALID_TOKENS = {key.strip() for key in API_SECRET_KEYS.split(',') if key.strip()}
-
-async def verify_api_key(
-    credentials: HTTPAuthorizationCredentials = Security(bearer_scheme)
-):
-    if credentials.credentials not in VALID_TOKENS:
-        raise HTTPException(status_code=401, detail='Unauthorized')
 
 
-@app.get('/api/healthcheck', dependencies=[Depends(verify_api_key)])
+@app.get('/api/healthcheck', dependencies=[Depends(admin_verify_api_key)], include_in_schema=False)
 async def health_check():
     return JSONResponse('ok', 200)
 
 
-@app.post('/{token}')
+@app.post('/t/{token}', include_in_schema=False)
 async def telegram_webhook(token: str, request: Request):
-    from source.bot_init import BOT_TOKEN
-    if token != BOT_TOKEN:
-        raise HTTPException(status_code=403, detail='Invalid token')
+    expected = make_wh_token(BOT_TOKEN)
+    if not compare_digest(token, expected):
+        raise HTTPException(status_code=403, detail="Invalid token")
 
     update = Update.model_validate(await request.json(), context={'bot': bot})
     asyncio.create_task(dp.feed_update(bot, update))
@@ -44,6 +36,27 @@ async def telegram_webhook(token: str, request: Request):
     return JSONResponse(status_code=200, content={"ok": True})
 
 
-@app.get('/check', dependencies=[Depends(verify_api_key)])
+@app.get('/check', dependencies=[Depends(user_verify_api_key)])
 async def api_check(author: str):
     return await author_check(author)
+
+@app.post('/add_author',
+          dependencies=[Depends(admin_verify_api_key)],
+          status_code=200,
+          summary='Add Author',
+          description='Adding an author with accompanying content;\n'
+                      'Author Type: add_bad/add_good;\n'
+                      "Name: Artist's nickname;\n"
+                      "Content:\n"
+                      "\t\t - add_bad: reason for being blacklisted;\n"
+                      "\t\t - add_good: link to one of the social networks."
+          )
+async def add_author(payload: APIAddAuthor):
+    try:
+        await author_add(
+            payload.author_type,
+            payload.name,
+            payload.content)
+        return JSONResponse(status_code=200, content='ok')
+    except Exception as e:
+        return JSONResponse(status_code=400, content=e)

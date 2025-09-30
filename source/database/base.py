@@ -44,6 +44,7 @@ def connect_db():
     global users_db
     global good_author_db
     log = logging.getLogger('database')
+    log.propagate = False
     db = dynamodb_client.Table(os.environ.get('db_name'))
     log.info(f' MainDB: {db.table_status}')
     ban_db = dynamodb_client.Table(os.environ.get('db_ban'))

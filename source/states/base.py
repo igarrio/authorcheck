@@ -1,4 +1,11 @@
 from aiogram.fsm.state import StatesGroup, State
+from pydantic import BaseModel
+
+
+class APIAddAuthor(BaseModel):
+    author_type: str
+    name: str
+    content: str
 
 
 class SenderMsg(StatesGroup):

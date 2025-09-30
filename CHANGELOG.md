@@ -1,3 +1,7 @@
+## ver 1.10
+- new API endpoint (/add_author)
+- authorization system addition
+- reworked the webhook for the bot
 ## ver 1.9-2
 - 🥀🥀🥀 handle TelegramNetworkError
 ## ver 1.9-1:

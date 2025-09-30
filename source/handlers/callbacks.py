@@ -76,8 +76,10 @@ async def choose_good_author_add(callback: CallbackQuery, state: FSMContext):
 
 async def confirm_add(callback: CallbackQuery, state: FSMContext):
     await bot.answer_callback_query(callback.id)
-    _ = await state.get_data()
-    await author_add(_)
+    raw_data = await state.get_data()
+    _content = raw_data['content'].split('\n')
+    _type = raw_data['type']
+    await author_add(_type, _content[0], _content[1])
     await callback.message.edit_text('Успішно внесено до бази!')
     await callback.answer()
     await state.clear()

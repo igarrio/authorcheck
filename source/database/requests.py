@@ -47,17 +47,16 @@ async def add_user_id(_, _db):
     )
 
 
-async def author_add(data):
-    _ = data['content'].split('\n')
-    if data['type'] == 'add_good':
+async def author_add(_type: str, _author: str, _data: str ):
+    if _type == 'add_good':
         source.database.base.good_author_db.put_item(Item={
-        'author': _[0].lower(),
-        'link': _[1]
+        'author': _author.lower(),
+        'link': _data
     })
-    elif data['type'] == 'add_bad':
+    elif _type == 'add_bad':
         source.database.base.db.put_item(Item={
-        'author': _[0].lower(),
-        'description': _[1]
+        'author': _author.lower(),
+        'description': _data
     })
 
 
