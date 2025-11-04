@@ -14,6 +14,7 @@ API_ADMIN_KEYS = os.getenv('API_ADMIN_KEYS', '')
 USER_TOKENS = {key.strip() for key in API_USER_KEYS.split(',') if key.strip()}
 ADMIN_TOKENS = {key.strip() for key in API_ADMIN_KEYS.split(',') if key.strip()}
 SERVER_SECRET = secrets.token_bytes(32)
+XTBAST = secrets.token_urlsafe(16)
 
 logger.warning(f'Bearer_scheme.auto_error = {bearer_scheme.auto_error}')
 

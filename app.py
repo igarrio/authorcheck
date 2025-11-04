@@ -6,7 +6,8 @@ from contextlib import asynccontextmanager
 from secrets import compare_digest
 from source.bot_init import dp, on_startup, on_shutdown, bot, BOT_TOKEN
 from source.database.requests import author_check, author_add
-from source.utils.tokens import user_verify_api_key, admin_verify_api_key, make_wh_token
+from source.utils.tokens import user_verify_api_key, admin_verify_api_key, make_wh_token, XTBAST
+from source.utils.custom_feed_update import _feed_update
 from source.states.base import APIAddAuthor
 
 
@@ -24,14 +25,18 @@ async def health_check():
     return JSONResponse('ok', 200)
 
 
-@app.post('/t/{token}', include_in_schema=False)
+@app.post('/authorcheck/{token}', include_in_schema=False)
 async def telegram_webhook(token: str, request: Request):
+    secret_from_tg = request.headers.get('X-Telegram-Bot-Api-Secret-Token')
     expected = make_wh_token(BOT_TOKEN)
     if not compare_digest(token, expected):
-        raise HTTPException(status_code=403, detail="Invalid token")
+        raise HTTPException(status_code=403, detail='Invalid URL token')
+
+    if not secret_from_tg == XTBAST:
+        raise HTTPException(status_code=403, detail='Invalid Webhook secret')
 
     update = Update.model_validate(await request.json(), context={'bot': bot})
-    asyncio.create_task(dp.feed_update(bot, update))
+    asyncio.create_task(_feed_update(dp, bot, update))
 
     return JSONResponse(status_code=200, content={"ok": True})
 

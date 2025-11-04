@@ -1,3 +1,8 @@
+## ver 1.11
+- 🫠
+- added webhook status check
+- improved webhook security
+- telegram update processing has been redesigned
 ## ver 1.10
 - new API endpoint (/add_author)
 - authorization system addition
