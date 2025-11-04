@@ -1,5 +1,6 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+from source.config import support_url
 
 btn_add_cancel = InlineKeyboardButton(text='❌ Відмінити',
                                       callback_data='cancel_add')
@@ -13,7 +14,8 @@ kb_sender = InlineKeyboardMarkup(resize_keyboard=True,
 
 kb_start = InlineKeyboardMarkup(resize_keyboard=True,
                                 inline_keyboard=[
-                                    [InlineKeyboardButton(text='Автор бота', url='t.me/kimino_musli')]
+                                    [InlineKeyboardButton(text='Автор бота', url='t.me/kimino_musli')],
+                                    [InlineKeyboardButton(text='Підтримати', url=support_url)]
                                 ]
                                 )
 
