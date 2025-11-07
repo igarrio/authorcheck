@@ -1,4 +1,5 @@
 import os
+import asyncio
 from source.utils.tokens import make_wh_token, XTBAST
 from aiogram import Bot, Dispatcher
 from source.utils.webhook_healthcheck import start_webhook_monitor, stop_webhook_monitor
@@ -8,6 +9,10 @@ bot = Bot(token=BOT_TOKEN, parse_mode='HTML')
 dp = Dispatcher()
 
 WEBHOOK_URL = os.getenv("WEBHOOK_URL") + f'/authorcheck/{make_wh_token(BOT_TOKEN)}'
+
+
+async def get_webhook_info():
+    return await bot.get_webhook_info()
 
 
 async def on_startup():
@@ -20,7 +25,9 @@ async def on_startup():
     set_handlers()
 
     await bot.delete_webhook(drop_pending_updates=True)
-    await bot.set_webhook(WEBHOOK_URL, drop_pending_updates=True, secret_token=XTBAST)
+    set_result = await bot.set_webhook(WEBHOOK_URL, drop_pending_updates=True, secret_token=XTBAST, max_connections=100)
+    if not set_result:
+        await bot.set_webhook(WEBHOOK_URL, drop_pending_updates=True, secret_token=XTBAST, max_connections=100)
 
     await start_webhook_monitor(bot, WEBHOOK_URL)
 

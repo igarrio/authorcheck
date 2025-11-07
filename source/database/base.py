@@ -38,6 +38,18 @@ ban_set = None
 users_id = None
 
 
+def check_dynamo():
+    try:
+        main_db = dynamodb_client.Table(os.environ.get('db_name'))
+        status = main_db.table_status
+        if status == 'ACTIVE':
+            return {'success': True, 'msg': 'Main DB Active'}
+    except dynamodb_client.meta.client.exceptions.ResourceNotFoundException:
+        return {'success': False, 'msg': 'Error with main DB'}
+    except Exception as e:
+        return {'success': False, 'msg': str(e)}
+
+
 def connect_db():
     global db
     global ban_db

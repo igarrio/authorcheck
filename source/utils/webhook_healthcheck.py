@@ -1,5 +1,6 @@
 import logging
 import asyncio
+from source.utils.tokens import XTBAST
 
 wh_logger = logging.getLogger('WH.Health')
 
@@ -11,9 +12,10 @@ _webhook_monitor_task: asyncio.Task | None = None
 _webhook_monitor_stop = asyncio.Event()
 _webhook_monitor_lock = asyncio.Lock()
 
+bot = None
 
-async def ensure_webhook(bot, _wh_url):
-    """Checks the webhook and restores it if missing or incorrect."""
+
+async def ensure_webhook(_wh_url):
     async with _webhook_monitor_lock:
         try:
             info = await bot.get_webhook_info()
@@ -22,8 +24,8 @@ async def ensure_webhook(bot, _wh_url):
             raise
 
         # Check the webhook info
-        current_url = getattr(info, 'url', None)
-        last_error = getattr(info, 'last_error_message', None)
+        current_url = getattr(info, 'url')
+        last_error = getattr(info, 'last_error_message')
 
         if not current_url:
             wh_logger.info('Webhook not configured. Starting recovery.')
@@ -32,7 +34,7 @@ async def ensure_webhook(bot, _wh_url):
             while attempt < WEBHOOK_REPAIR_MAX_ATTEMPTS:
                 attempt += 1
                 try:
-                    await bot.set_webhook(_wh_url)
+                    await bot.set_webhook(_wh_url, secret_token=XTBAST, max_connections=100)
                     wh_logger.info(f'Webhook successfully installed on {_wh_url} (attempt {attempt})')
                     return True
                 except Exception as e:
@@ -47,7 +49,7 @@ async def ensure_webhook(bot, _wh_url):
             wh_logger.warning(f'Webhook has a problem: {last_error}; URL={current_url}')
             try:
                 await bot.delete_webhook(drop_pending_updates=False)
-                await bot.set_webhook(_wh_url)
+                await bot.set_webhook(_wh_url, secret_token=XTBAST, max_connections=100)
                 wh_logger.info('Webhook reloaded due to errors')
                 return True
             except Exception as e:
@@ -59,12 +61,12 @@ async def ensure_webhook(bot, _wh_url):
         return True
 
 
-async def _webhook_monitor_loop(bot, _wh_url):
+async def _webhook_monitor_loop(_wh_url):
     """WebHook Monitor"""
     while not _webhook_monitor_stop.is_set():
         try:
             try:
-                ok = await ensure_webhook(bot, _wh_url)
+                ok = await ensure_webhook(_wh_url)
             except Exception as e:
                 wh_logger.warning(f'Failed to verify or restore webhook: {e}')
                 ok = False
@@ -78,11 +80,12 @@ async def _webhook_monitor_loop(bot, _wh_url):
             await asyncio.sleep(5.0)
 
 
-async def start_webhook_monitor(bot, _wh_url):
-    global _webhook_monitor_task, _webhook_monitor_stop
+async def start_webhook_monitor(_bot, _wh_url):
+    global _webhook_monitor_task, _webhook_monitor_stop, bot
+    bot = _bot
     _webhook_monitor_stop.clear()
     if _webhook_monitor_task is None or _webhook_monitor_task.done():
-        _webhook_monitor_task = asyncio.create_task(_webhook_monitor_loop(bot, _wh_url))
+        _webhook_monitor_task = asyncio.create_task(_webhook_monitor_loop(_wh_url))
         wh_logger.info('Webhook monitor started')
 
 

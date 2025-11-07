@@ -19,7 +19,7 @@ async def handle_send_check_result(message: types.Message, command: CommandObjec
             search = await author_check(command.args)
             if search:
                 if isinstance(search, list):
-                    formatted_results = "\n".join(
+                    formatted_results = '\n'.join(
                         f"{i + 1}. <b>{result['author']}</b>\nПричина: <u>{result['description']}</u>"
                         for i, result in enumerate(search)
                     )
@@ -28,8 +28,8 @@ async def handle_send_check_result(message: types.Message, command: CommandObjec
                         f"1. <b>{search['author']}</b>\nПричина: <u>{search['description']}</u>"
                     )
                 good_author = await get_random_author()
-                final_message = (f"🙄 Ой йой... Здається я дещо знайшов:\n\n{formatted_results}\n\n"
-                                 f"Також радимо ознайомитись з чудовим автором:\n"
+                final_message = (f'🙄 Ой йой... Здається я дещо знайшов:\n\n{formatted_results}\n\n'
+                                 f'Також радимо ознайомитись з чудовим автором:\n'
                                  f'🌺 <a href="{good_author["link"]}">{good_author["author"]}</a> 🌺')
                 await message.reply(final_message)
             else:
