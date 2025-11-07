@@ -30,7 +30,7 @@ app.mount('/status', cast(ASGIApp, WSGIMiddleware(status_app.server)))
 async def health_check():
     return JSONResponse('ok', 200)
 
-@app.get('/')
+@app.get('/', include_in_schema=False)
 async def welcome():
     return RedirectResponse(url='/status')
 
