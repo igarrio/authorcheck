@@ -5,3 +5,9 @@ AuthorCheck - телеграм-бот, розроблений для адмін�
 
 База розроблялась на добровільній основі небайдужими українцями
 ```
+
+### API
+
+[Swagger](https://planned-nerita-kiminopersonal-90bb17c0.koyeb.app/docs)
+
+[Modules Monitor](https://planned-nerita-kiminopersonal-90bb17c0.koyeb.app/status/)
