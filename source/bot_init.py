@@ -1,5 +1,4 @@
 import os
-import asyncio
 from source.utils.tokens import make_wh_token, XTBAST
 from aiogram import Bot, Dispatcher
 from source.utils.webhook_healthcheck import start_webhook_monitor, stop_webhook_monitor
@@ -24,15 +23,24 @@ async def on_startup():
     from source.handlers.set import set_handlers
     set_handlers()
 
-    await bot.delete_webhook(drop_pending_updates=True)
-    set_result = await bot.set_webhook(WEBHOOK_URL, drop_pending_updates=True, secret_token=XTBAST, max_connections=100)
-    if not set_result:
-        await bot.set_webhook(WEBHOOK_URL, drop_pending_updates=True, secret_token=XTBAST, max_connections=100)
+    search_wh = await bot.get_webhook_info()
+    if search_wh.url != WEBHOOK_URL:
+        await bot.delete_webhook(drop_pending_updates=True)
+        await bot.set_webhook(WEBHOOK_URL,
+                              drop_pending_updates=True,
+                              secret_token=XTBAST,
+                              max_connections=100)
 
     await start_webhook_monitor(bot, WEBHOOK_URL)
 
 
 async def on_shutdown():
     await stop_webhook_monitor()
-    await bot.delete_webhook()
-    await bot.session.close()
+
+    _delete_wh = await bot.delete_webhook()
+    while not _delete_wh:
+        _delete_wh = await bot.delete_webhook()
+
+    _session_close = await bot.session.close()
+    while not _session_close:
+        _session_close = await bot.session.close()

@@ -1,4 +1,5 @@
-import requests
+import httpx
+from http import HTTPStatus
 from apscheduler.schedulers.background import BackgroundScheduler
 import asyncio
 import logging
@@ -21,26 +22,29 @@ async def api(data):
     dash_check_log.warning('Checking API...')
     url = data['custom_request'].get('url')
     headers = data['custom_request'].get('headers', {})
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        badge = get_ok_badge(response.status_code, response.reason)
-    else:
-        badge = get_error_badge(response.status_code, response.reason)
-    return get_card_obj('AuthorCheck Main API ', get_iso_kyiv_tz(), badge)
+    async with httpx.AsyncClient(timeout=5.0) as client:
+        response = await client.get(url, headers=headers)
+        status_text = HTTPStatus(response.status_code).phrase
+        if response.status_code == 200:
+            badge = get_ok_badge(response.status_code, status_text)
+        else:
+            badge = get_error_badge(response.status_code, status_text)
+        return get_card_obj('AuthorCheck Main API ', get_iso_kyiv_tz(), badge)
 
 
 async def wh(data):
     dash_check_log.warning('Checking Telegram Webhook...')
     url = data['custom_request'].get('url')
     headers = data['custom_request'].get('headers', {})
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        payload = response.json()
-        if payload.get('url') == '':
-            badge = get_error_badge_for_wh(payload.get('last_error_message'))
-        elif payload.get('url') != '':
-            badge = get_ok_badge(200, 'ok')
-        return get_card_obj('Telegram BOT ', get_iso_kyiv_tz(), badge)
+    async with httpx.AsyncClient(timeout=5.0) as client:
+        response = await client.get(url, headers=headers)
+        if response.status_code == 200:
+            payload = response.json()
+            if payload.get('url') == '':
+                badge = get_error_badge_for_wh(payload.get('last_error_message'))
+            elif payload.get('url') != '':
+                badge = get_ok_badge(200, 'ok')
+            return get_card_obj('Telegram BOT ', get_iso_kyiv_tz(), badge)
 
 
 async def db(data):

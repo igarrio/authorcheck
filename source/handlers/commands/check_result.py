@@ -8,7 +8,7 @@ from source.database.requests import author_check, get_random_author
 
 async def handle_send_check_result(message: types.Message, command: CommandObject):
     log = logging.getLogger('request')
-    log.info(f'Check request: {command.args}\nBy: {message.from_user.url}')
+    log.warning(f'Check request: {command.args}\nBy: {message.from_user.url}')
 
     try:
         if command.args is None:

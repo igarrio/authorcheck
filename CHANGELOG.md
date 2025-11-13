@@ -1,3 +1,7 @@
+## ver 1.14
+- requests -> httpx
+- general bug fixes throughout the project and logging reconfiguration
+- code refactoring
 ## ver 1.13
 - Module monitoring optimization
 ## ver 1.12

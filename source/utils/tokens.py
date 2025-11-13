@@ -31,7 +31,7 @@ async def user_verify_api_key(
     if not credentials:
         raise HTTPException(status_code=401, detail="Not authenticated")
     token = credentials.credentials
-    logger.info(f'Verifying token: {token}')
+    logger.warning(f'Verifying token: {token}')
     if token not in USER_TOKENS and token not in ADMIN_TOKENS:
         raise HTTPException(status_code=401, detail='Invalid API token')
 
@@ -41,6 +41,6 @@ async def admin_verify_api_key(
     if not credentials:
         raise HTTPException(status_code=401, detail="Not authenticated")
     token = credentials.credentials
-    logger.info(f'Verifying token: {token}')
+    logger.warning(f'Verifying token: {token}')
     if token not in ADMIN_TOKENS:
         raise HTTPException(status_code=401, detail='Invalid API token')

@@ -1,5 +1,5 @@
 import asyncio
-from fastapi import FastAPI, Request, HTTPException, Security, Depends
+from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.responses import JSONResponse, RedirectResponse
 from aiogram.types import Update
 from contextlib import asynccontextmanager
@@ -13,6 +13,7 @@ from source.utils.tokens import user_verify_api_key, admin_verify_api_key, make_
 from source.utils.custom_feed_update import _feed_update
 from source.states.base import APIAddAuthor
 from source.status_dash.main import status_app
+from source.status_dash.checking import schedule_run_checks
 
 
 @asynccontextmanager
@@ -23,19 +24,24 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-app.mount('/status', cast(ASGIApp, WSGIMiddleware(status_app.server)))
+app.mount('/status',
+          cast(ASGIApp, WSGIMiddleware(status_app.server)))
 
 
-@app.get('/api/healthcheck', dependencies=[Depends(admin_verify_api_key)], include_in_schema=False)
+@app.get('/api/healthcheck',
+         dependencies=[Depends(admin_verify_api_key)],
+         include_in_schema=False)
 async def health_check():
     return JSONResponse('ok', 200)
 
-@app.get('/', include_in_schema=False)
+@app.get('/',
+         include_in_schema=False)
 async def welcome():
     return RedirectResponse(url='/status')
 
 
-@app.post('/authorcheck/{token}', include_in_schema=False)
+@app.post('/authorcheck/{token}',
+          include_in_schema=False)
 async def telegram_webhook(token: str, request: Request):
     secret_from_tg = request.headers.get('X-Telegram-Bot-Api-Secret-Token')
     expected = make_wh_token(BOT_TOKEN)
@@ -51,11 +57,13 @@ async def telegram_webhook(token: str, request: Request):
     return JSONResponse(status_code=200, content={'ok': True})
 
 
-@app.get('/check', dependencies=[Depends(user_verify_api_key)])
+@app.get('/check',
+         dependencies=[Depends(user_verify_api_key)])
 async def api_check(author: str):
     return await author_check(author)
 
-@app.get('/get_webhook_info', dependencies=[Depends(admin_verify_api_key)])
+@app.get('/get_webhook_info',
+         dependencies=[Depends(admin_verify_api_key)])
 async def api_get_wh_info():
     return await get_webhook_info()
 
@@ -77,5 +85,15 @@ async def add_author(payload: APIAddAuthor):
             payload.name,
             payload.content)
         return JSONResponse(status_code=200, content='ok')
+    except Exception as e:
+        return JSONResponse(status_code=400, content=e)
+
+
+@app.post('/dash/update_cache',
+          dependencies=[Depends(admin_verify_api_key)])
+async def update_monitor_cache():
+    try:
+        schedule_run_checks()
+        return JSONResponse(status_code=202, content='Monitor cache update started')
     except Exception as e:
         return JSONResponse(status_code=400, content=e)

@@ -39,14 +39,22 @@ async def start_sender(callback: CallbackQuery, state: FSMContext):
 
 async def report_author_confirm(callback: CallbackQuery):
     await bot.answer_callback_query(callback.id)
-    await send_report('Add Author', callback.from_user.id, bot, callback.from_user.first_name, source.handlers.commands.report_author.report_text)
+    await send_report('Add Author',
+                      callback.from_user.id,
+                      bot,
+                      callback.from_user.first_name,
+                      source.handlers.commands.report_author.report_text)
     await callback.message.edit_text('✅ Повідомлення успішно відправлено адміністратору')
     await callback.answer()
 
 
 async def report_bug_confirm(callback: CallbackQuery):
     await bot.answer_callback_query(callback.id)
-    await send_report('Bug Report', callback.from_user.id, bot, callback.from_user.first_name, source.handlers.commands.report_bug.report_text)
+    await send_report('Bug Report',
+                      callback.from_user.id,
+                      bot,
+                      callback.from_user.first_name,
+                      source.handlers.commands.report_bug.report_text)
     await callback.message.edit_text('✅ Повідомлення успішно відправлено адміністратору')
     await callback.answer()
 

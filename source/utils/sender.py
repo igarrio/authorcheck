@@ -36,12 +36,12 @@ async def send_mail(bot, to_id, from_id, msg_id):
             reply_markup=kb,
             parse_mode='HTML'
         )
-        log.info(f'Sended msg to {to_id}')
+        log.warning(f'Sended msg to {to_id}')
     except TelegramRetryAfter as e:
         await asyncio.sleep(e.retry_after)
         return await send_mail(bot, to_id, from_id, msg_id)
     except Exception as e:
-        log.info(e)
+        log.exception(e)
         return False
     else:
         return True

@@ -29,7 +29,8 @@ status_app.layout = [
         Hr(style={'opacity': 0}),
         Container([
             Col(
-                Div(id='checks-container', className='mx-auto'), width={'size': 6, 'offset': 3}
+                Div(id='checks-container', className='mx-auto'),
+                width={'size': 6, 'offset': 3}
             )
         ]),
         footer
