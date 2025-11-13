@@ -9,3 +9,4 @@ dash==3.2.0
 dash_bootstrap_components
 a2wsgi==1.10.10
 dash[async]
+APScheduler==3.10.4

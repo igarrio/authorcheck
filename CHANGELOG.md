@@ -1,3 +1,5 @@
+## ver 1.13
+- Module monitoring optimization
 ## ver 1.12
 - visualization of the availability of certain modules by the /status endpoint, implemented on Dash
 ## ver 1.11

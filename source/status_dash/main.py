@@ -6,8 +6,9 @@ from dash_bootstrap_components.themes import VAPOR
 from dash_bootstrap_components.icons import BOOTSTRAP
 
 from source.status_dash.res import footer, header
-from source.status_dash.checking_config import dataset
-from source.status_dash.checking import handlers
+import source.status_dash.checking as checking
+
+INTERVAL = 900000
 
 status_app = Dash(
     external_stylesheets=[VAPOR, BOOTSTRAP],
@@ -22,7 +23,7 @@ status_app = Dash(
 status_app.title = 'AuthorCheck Monitor'
 
 status_app.layout = [
-    Interval(id='interval', interval=900000, n_intervals=0),
+    Interval(id='interval', interval=INTERVAL, n_intervals=0),
     header,
     Container([
         Hr(style={'opacity': 0}),
@@ -40,9 +41,4 @@ status_app.layout = [
     Input('interval', 'n_intervals')
 )
 async def update_check(n):
-    obj_list = []
-    for item in dataset:
-        handler = handlers.get(item['id'])
-        if handler:
-            obj_list.append(await handler(item))
-    return obj_list
+    return checking.CHECK_CACHE

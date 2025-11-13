@@ -11,3 +11,6 @@ AuthorCheck - телеграм-бот, розроблений для адмін�
 [Swagger](https://planned-nerita-kiminopersonal-90bb17c0.koyeb.app/docs)
 
 [Modules Monitor](https://planned-nerita-kiminopersonal-90bb17c0.koyeb.app/status/)
+
+
+#### [ChangeLog](https://github.com/igarrio/authorcheck/blob/main/CHANGELOG.md)
