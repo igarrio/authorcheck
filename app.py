@@ -7,13 +7,15 @@ from secrets import compare_digest
 from a2wsgi import WSGIMiddleware
 from starlette.types import ASGIApp
 from typing import cast
-from source.bot_init import dp, on_startup, on_shutdown, bot, BOT_TOKEN, get_webhook_info
+from source.bot_init import dp, bot, BOT_TOKEN
 from source.database.requests import author_check, author_add
 from source.utils.tokens import user_verify_api_key, admin_verify_api_key, make_wh_token, XTBAST
 from source.utils.custom_feed_update import _feed_update
 from source.states.base import APIAddAuthor
 from source.status_dash.main import status_app
 from source.status_dash.checking import schedule_run_checks
+from source.lifespan import on_startup, on_shutdown
+from source.utils.bot import get_wh_info
 
 
 @asynccontextmanager
@@ -65,7 +67,7 @@ async def api_check(author: str):
 @app.get('/get_webhook_info',
          dependencies=[Depends(admin_verify_api_key)])
 async def api_get_wh_info():
-    return await get_webhook_info()
+    return await get_wh_info()
 
 @app.post('/add_author',
           dependencies=[Depends(admin_verify_api_key)],

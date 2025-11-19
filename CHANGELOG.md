@@ -1,3 +1,6 @@
+## ver 1.15
+- changes to webhook monitoring
+- mechanism for switching the method of receiving updates in case of possible unavailability of the URL (Cloudflare-incident)
 ## ver 1.14
 - requests -> httpx
 - general bug fixes throughout the project and logging reconfiguration
