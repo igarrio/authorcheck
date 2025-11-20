@@ -1,3 +1,5 @@
+## ver 1.15-1
+- little fixes
 ## ver 1.15
 - changes to webhook monitoring
 - mechanism for switching the method of receiving updates in case of possible unavailability of the URL (Cloudflare-incident)

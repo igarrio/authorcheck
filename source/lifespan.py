@@ -1,6 +1,13 @@
+import asyncio
+
 from source.bot_init import bot, WEBHOOK_URL
 from source.utils.bot import get_wh_info, delete_wh, set_wh, close_session
 from source.utils.webhook_healthcheck import start_webhook_monitor, stop_webhook_monitor
+
+
+async def delayed_webhook_monitor():
+    await asyncio.sleep(300)
+    await start_webhook_monitor(bot, WEBHOOK_URL)
 
 
 async def on_startup():
@@ -17,7 +24,7 @@ async def on_startup():
         await delete_wh()
         await set_wh()
 
-    await start_webhook_monitor(bot, WEBHOOK_URL)
+    asyncio.create_task(delayed_webhook_monitor())
 
 
 async def on_shutdown():
