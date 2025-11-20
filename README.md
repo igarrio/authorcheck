@@ -8,9 +8,9 @@ AuthorCheck - телеграм-бот, розроблений для адмін�
 
 ### API
 
-[Swagger](https://planned-nerita-kiminopersonal-90bb17c0.koyeb.app/docs)
+[Swagger](https://authorcheck.pp.ua/docs)
 
-[Modules Monitor](https://planned-nerita-kiminopersonal-90bb17c0.koyeb.app/status/)
+[Modules Monitor](https://authorcheck.pp.ua/status/)
 
 
 #### [ChangeLog](https://github.com/igarrio/authorcheck/blob/main/CHANGELOG.md)
