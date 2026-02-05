@@ -1,13 +1,11 @@
-class PixivDataForParsing:
-    url = ''
-    meta_count = 0
-    link_type = ''
-    job_id = ''
-    target = ''
+from dataclasses import dataclass
 
-    def __init__(self, url, meta_count, link_type, job_id, target):
-        self.url = url
-        self.meta_count = meta_count
-        self.link_type = link_type
-        self.job_id = job_id
-        self.target = target
+
+@dataclass
+class PixivDataForParsing:
+    """Data container for Pixiv URL parsing parameters."""
+    url: str
+    meta_count: int
+    link_type: str
+    job_id: str
+    target: str

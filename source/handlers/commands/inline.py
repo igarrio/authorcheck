@@ -1,13 +1,16 @@
-from aiogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessageContent
 from secrets import token_hex
+
+from aiogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessageContent
 
 from source.database.requests import author_check
 from source.utils.inline import build_check_results
 
 
-async def ihandler_check(inline_query: InlineQuery):
-    command = inline_query.query
-    arg = command.replace('@authorcheckdev_bot ', '')
+async def ihandler_check(inline_query: InlineQuery) -> None:
+    """Handle inline query - search for author from any chat."""
+    query = inline_query.query
+    arg = query.replace('@authorcheckdev_bot ', '')
+
     try:
         if len(arg) < 3:
             inline_answer = [InlineQueryResultArticle(
@@ -26,7 +29,7 @@ async def ihandler_check(inline_query: InlineQuery):
         inline_answer = [InlineQueryResultArticle(
             id=token_hex(4),
             title='‍❌ Виникла помилка!',
-            description=f'{e}',
+            description=str(e),
             input_message_content=InputTextMessageContent(
                 message_text=f'❌ Виникла помилка!\n\n{e}'
             )

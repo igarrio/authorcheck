@@ -1,11 +1,23 @@
-import logging
 import asyncio
+import logging
+
+from aiogram import Bot, Dispatcher
 from aiogram.types import Update
+
 
 feedlog = logging.getLogger('feedUpdate')
 
 
-async def _feed_update(dp, bot, update: Update, max_retries: int = 5, base_delay: float = 1.5):
+async def _feed_update(
+    dp: Dispatcher,
+    bot: Bot,
+    update: Update,
+    max_retries: int = 5,
+    base_delay: float = 1.5
+) -> None:
+    """
+    Feed update to dispatcher with exponential backoff retry.
+    """
     attempt = 0
     while True:
         try:

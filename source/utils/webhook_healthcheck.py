@@ -1,23 +1,27 @@
-import logging
 import asyncio
+import logging
+
 import httpx
+
+from aiogram import Bot
 from source.utils.bot import set_wh, delete_wh, get_wh_info, run_long_polling, stop_long_polling
 
 
 wh_logger = logging.getLogger('WH.Health')
 
-WEBHOOK_CHECK_INTERVAL = 900.0  # seconds between regular checks
-WEBHOOK_REPAIR_MAX_ATTEMPTS = 5
-WEBHOOK_REPAIR_BASE_DELAY = 10.0  # base for exponential backoff
+WEBHOOK_CHECK_INTERVAL: float = 900.0  # seconds between regular checks
+WEBHOOK_REPAIR_MAX_ATTEMPTS: int = 5
+WEBHOOK_REPAIR_BASE_DELAY: float = 10.0  # base for exponential backoff
 
 _webhook_monitor_task: asyncio.Task | None = None
-_webhook_monitor_stop = asyncio.Event()
-_webhook_monitor_lock = asyncio.Lock()
+_webhook_monitor_stop: asyncio.Event = asyncio.Event()
+_webhook_monitor_lock: asyncio.Lock = asyncio.Lock()
 
 POLLING_MODE: bool = False
 
 
-async def ensure_webhook_from_tg(_wh_url):
+async def ensure_webhook_from_tg(webhook_url: str) -> bool:
+    """Verify webhook is configured correctly, attempt recovery if not."""
     async with _webhook_monitor_lock:
         try:
             info = await get_wh_info()
@@ -37,7 +41,7 @@ async def ensure_webhook_from_tg(_wh_url):
                 attempt += 1
                 try:
                     await set_wh()
-                    wh_logger.warning(f'Webhook successfully installed on {_wh_url} (attempt {attempt})')
+                    wh_logger.warning(f'Webhook successfully installed on {webhook_url} (attempt {attempt})')
                     return True
                 except Exception as e:
                     delay = WEBHOOK_REPAIR_BASE_DELAY * (2 ** (attempt - 1))
@@ -63,14 +67,14 @@ async def ensure_webhook_from_tg(_wh_url):
         return True
 
 
-async def _webhook_monitor_loop(_wh_url):
-    """WebHook Monitor"""
+async def _webhook_monitor_loop(webhook_url: str) -> None:
+    """Background task that periodically checks webhook health."""
     while not _webhook_monitor_stop.is_set():
         try:
             global POLLING_MODE
-            if await check_webhook_url(_wh_url):
+            if await check_webhook_url(webhook_url):
                 try:
-                    wh_tg_ok = await ensure_webhook_from_tg(_wh_url)
+                    wh_tg_ok = await ensure_webhook_from_tg(webhook_url)
                 except Exception as e:
                     wh_logger.warning(f'Failed to verify or restore webhook: {e}')
                     wh_tg_ok = False
@@ -90,15 +94,17 @@ async def _webhook_monitor_loop(_wh_url):
             await asyncio.sleep(5.0)
 
 
-async def start_webhook_monitor(_bot, _wh_url):
+async def start_webhook_monitor(bot: Bot, webhook_url: str) -> None:
+    """Start background webhook health monitor."""
     global _webhook_monitor_task, _webhook_monitor_stop
     _webhook_monitor_stop.clear()
     if _webhook_monitor_task is None or _webhook_monitor_task.done():
-        _webhook_monitor_task = asyncio.create_task(_webhook_monitor_loop(_wh_url))
+        _webhook_monitor_task = asyncio.create_task(_webhook_monitor_loop(webhook_url))
         wh_logger.warning('Webhook monitor started')
 
 
-async def stop_webhook_monitor():
+async def stop_webhook_monitor() -> None:
+    """Stop background webhook health monitor."""
     global _webhook_monitor_task, _webhook_monitor_stop
     _webhook_monitor_stop.set()
     if _webhook_monitor_task is not None:
@@ -110,10 +116,8 @@ async def stop_webhook_monitor():
     wh_logger.warning('Webhook monitor stopped')
 
 
-async def check_webhook_url(_wh_url):
+async def check_webhook_url(webhook_url: str) -> bool:
+    """Check if webhook URL is reachable (expects 403 for valid webhook)."""
     async with httpx.AsyncClient(timeout=5.0) as client:
-        response = await client.post(_wh_url)
-    if response.status_code == 403:
-        return True
-    else:
-        return False
+        response = await client.post(webhook_url)
+    return response.status_code == 403

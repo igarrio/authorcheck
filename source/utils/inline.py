@@ -1,28 +1,28 @@
 from secrets import token_hex
+from typing import TypedDict
 
 from aiogram.types import InlineQueryResultArticle, InputTextMessageContent
 
 
-async def build_check_results(search):
-    result = []
+class AuthorRecord(TypedDict):
+    author: str
+    description: str
+
+
+async def build_check_results(
+    search: list[AuthorRecord] | None
+) -> list[InlineQueryResultArticle]:
+    """Build inline query results from database search results."""
+    result: list[InlineQueryResultArticle] = []
+
     if search:
-        if isinstance(search, list):
-            for _ in search:
-                result.append(InlineQueryResultArticle(
-                    id=token_hex(4),
-                    title=f'{_["author"]}',
-                    description=f'{_["description"]}',
-                    input_message_content=InputTextMessageContent(
-                        message_text=f"<b>{_['author']}</b>\nПричина: <u>{_['description']}</u>"
-                    )
-                ))
-        else:
+        for item in search:
             result.append(InlineQueryResultArticle(
                 id=token_hex(4),
-                title=f'1. {search["author"]}',
-                description=f'{search["description"]}',
+                title=item["author"],
+                description=item["description"],
                 input_message_content=InputTextMessageContent(
-                    message_text=f"1. <b>{search['author']}</b>\nПричина: <u>{search['description']}</u>"
+                    message_text=f"<b>{item['author']}</b>\nПричина: <u>{item['description']}</u>"
                 )
             ))
     else:
@@ -34,4 +34,5 @@ async def build_check_results(search):
                 message_text='😮‍💨 На щастя - нічого не знайдено!\nАле радимо додатково перевіряти авторів'
             )
         )]
+
     return result
