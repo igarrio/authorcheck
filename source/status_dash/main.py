@@ -1,5 +1,7 @@
+from pathlib import Path
+
 from dash import Dash, Output, Input
-from dash.html import Hr, Div
+from dash.html import Div
 from dash.dcc import Interval
 from dash_bootstrap_components import Container, Col
 from dash_bootstrap_components.themes import VAPOR
@@ -9,9 +11,11 @@ from source.status_dash.res import footer, header
 import source.status_dash.checking as checking
 
 INTERVAL = 900000
+ASSETS_DIR = Path(__file__).parent / 'assets'
 
 status_app = Dash(
     external_stylesheets=[VAPOR, BOOTSTRAP],
+    assets_folder=str(ASSETS_DIR),
     meta_tags=[
         {'name': 'viewport', 'content': 'width=device-width, initial-scale=1'},
     ],
@@ -22,20 +26,23 @@ status_app = Dash(
 
 status_app.title = 'AuthorCheck Monitor'
 
-status_app.layout = [
+status_app.layout = Div([
     Interval(id='interval', interval=INTERVAL, n_intervals=0),
     header,
     Container([
-        Hr(style={'opacity': 0}),
+        Div(style={'height': '2.5rem'}),
+        Div('Service Health', className='section-header'),
         Container([
             Col(
                 Div(id='checks-container', className='mx-auto'),
-                width={'size': 6, 'offset': 3}
+                width={'size': 10, 'offset': 1},
+                lg={'size': 6, 'offset': 3},
             )
         ]),
-        footer
-    ], style={'max-width': '1320px'}),
-]
+        footer,
+    ], className='page-wrap', style={'max-width': '1320px'}),
+])
+
 
 @status_app.callback(
     Output('checks-container', 'children'),

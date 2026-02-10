@@ -1,3 +1,5 @@
+## ver 1.17
+- updated visual for /status
 ## ver 1.16
 - code refactoring
 ## ver 1.15-1
