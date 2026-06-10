@@ -6,14 +6,17 @@ import logging
 
 from source.status_dash.res.badges import get_ok_badge, get_error_badge, get_error_badge_for_wh
 from source.status_dash.res.check_card import get_card_obj
+from source.status_dash.res.stat_card import get_stat_card_obj
 from source.status_dash.utils import get_iso_kyiv_tz
 from source.status_dash.checking_config import dataset
 from source.database.base import check_dynamo
+from source.database.requests import get_db_stats
 
 
 dash_check_log = logging.getLogger('DASH MONITOR LOGGING:')
 
 CHECK_CACHE = []
+STATS_CACHE = []
 scheduler = BackgroundScheduler()
 loop = asyncio.get_event_loop()
 
@@ -65,6 +68,7 @@ handlers = {
 
 async def run_checks():
     global CHECK_CACHE
+    global STATS_CACHE
     dash_check_log.warning('...Checking started...')
     obj_list = []
     for item in dataset:
@@ -72,6 +76,22 @@ async def run_checks():
         if handler:
             obj_list.append(await handler(item))
     CHECK_CACHE = obj_list
+    dash_check_log.warning('Getting Stats...')
+    try:
+        stats = await get_db_stats()
+        STATS_CACHE = [
+            get_stat_card_obj('Blacklist ', stats['blacklist_count']),
+            get_stat_card_obj('Whitelist ', stats['whitelist_count']),
+        ]
+        dash_check_log.warning(f'Stats: {stats=}')
+    except Exception as e:
+        dash_check_log.error(f'Stats error: {e}', exc_info=True)
+    # stats = await get_db_stats()
+    # STATS_CACHE = [
+    #     get_stat_card_obj('Blacklist ', stats['blacklist_count']),
+    #     get_stat_card_obj('Whitelist ', stats['whitelist_count']),
+    # ]
+    # dash_check_log.warning(f'Stats: {stats=}')
     dash_check_log.warning('...Checking completed...')
 
 

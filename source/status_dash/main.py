@@ -39,6 +39,15 @@ status_app.layout = Div([
                 lg={'size': 6, 'offset': 3},
             )
         ]),
+        Div(style={'height': '2.5rem'}),
+        Div('Database Stats', className='section-header'),
+        Container([
+            Col(
+                Div(id='stats-container', className='mx-auto'),
+                width={'size': 10, 'offset': 1},
+                lg={'size': 6, 'offset': 3},
+            )
+        ]),
         footer,
     ], className='page-wrap', style={'max-width': '1320px'}),
 ])
@@ -50,3 +59,11 @@ status_app.layout = Div([
 )
 async def update_check(n):
     return checking.CHECK_CACHE
+
+
+@status_app.callback(
+    Output('stats-container', 'children'),
+    Input('interval', 'n_intervals')
+)
+async def update_stats(n):
+    return checking.STATS_CACHE

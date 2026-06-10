@@ -1,4 +1,5 @@
 import random
+import os
 from typing import Any, TypedDict
 
 from boto3.dynamodb.conditions import Attr
@@ -97,3 +98,15 @@ async def get_random_author() -> GoodAuthorRecord:
     return random.choice(items)
 
 
+async def get_db_stats() -> dict:
+    """Get table item counts via describe_table (updated every ~6 hours by AWS)."""
+    bad_response = source.database.base.dynamodb_client.meta.client.describe_table(
+        TableName=os.environ.get('db_name')
+    )
+    good_response = source.database.base.dynamodb_client.meta.client.describe_table(
+        TableName=os.environ.get('db_goodauthor')
+    )
+    return {
+        'blacklist_count': bad_response['Table']['ItemCount'],
+        'whitelist_count': good_response['Table']['ItemCount'],
+    }

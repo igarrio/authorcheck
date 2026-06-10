@@ -1,3 +1,5 @@
+## ver 1.18
+- add new info to /status
 ## ver 1.17
 - updated visual for /status
 ## ver 1.16
